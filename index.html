@@ -319,8 +319,6 @@ html,body{
   gap:12px;
   background:rgba(255,255,255,0.015);
 }
-.video-frame svg{ width:36px; height:36px; opacity:0.65; }
-.video-frame span{ color:var(--ink-dim); font-size:0.9rem; }
 
 .star-nav{
   background:none;
@@ -538,12 +536,8 @@ button:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
       </div>
 
       <div class="block video-block">
-        <div class="video-frame">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#e8a838" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="5" width="18" height="14" rx="2"/>
-            <path d="M10 9l5 3-5 3V9z"/>
-          </svg>
-          <span>سيُضاف فيديو Scratch هنا</span>
+        <div class="video-frame" style="border:none; padding:0; background:transparent;">
+          <iframe width="100%" height="100%" style="width:100%; height:100%; border-radius:14px; border:1.5px solid rgba(232,168,56,0.38);" src="https://www.youtube-nocookie.com/embed/SFn-8yKGKqI" title="What If We Stop Sleeping - تعرف على فوائد النوم ليلا وبشكل منتظم" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
 
         <button class="star-nav" id="toPage2" type="button" aria-label="الانتقال للصفحة التالية">
@@ -637,7 +631,6 @@ button:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
 <script>
 (function(){
 
-  // توليد نجوم 4K واقعية وملونة (أبيض، ذهبي ناعم، أزرق جليدي، ووردي خافت)
   function buildField(id, count){
     var el = document.getElementById(id);
     if(!el) return;
@@ -801,14 +794,12 @@ button:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
   document.getElementById('toPage4').addEventListener('click', function(){ goTo('page4'); });
   document.getElementById('toPage1From4').addEventListener('click', function(){ goTo('page1'); });
 
-  /* ── Page 1: reveal MAIN answer ── */
   document.getElementById('btnA1').addEventListener('click', function(){
     document.getElementById('answer1').classList.add('visible');
     this.disabled = true;
     this.textContent = 'تم عرض الإجابة';
   });
 
-  /* ── Page 1: reveal INDIVIDUAL facts ── */
   document.querySelectorAll('.fact-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
       this.style.display = 'none';
@@ -816,7 +807,6 @@ button:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
     });
   });
 
-  /* ── Page 2 ── */
   var qmarkBtn = document.getElementById('qmarkBtn');
   var qa2Content = document.getElementById('qa2Content');
   var nextAnswerBtn = document.getElementById('nextAnswerBtn');
@@ -842,7 +832,6 @@ button:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
     }
   });
 
-  /* ── Page 3 ── */
   document.getElementById('btnA3').addEventListener('click', function(){
     document.getElementById('answer3').classList.add('visible');
     this.disabled = true;
