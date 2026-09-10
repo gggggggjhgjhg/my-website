@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>النوم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --navy:#07102a;
+  --navy-mid:#0b1635;
+  --navy-deep:#05091e;
+  --cream:#f4f1e6;
+  --cream-dim:#c8c3a8;
+  --gold:#e8a838;
+  --gold-dim:rgba(232,168,56,0.28);
+  --gold-soft:#c9922e;
+  --ink:#dde3f5;
+  --ink-dim:#8a95b8;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  height:100%;
+  background:var(--navy);
+  font-family:'Cairo','Segoe UI',Tahoma,Arial,sans-serif;
+  color:var(--ink);
+  overflow:hidden;
+}
+
+/* ─── ULTRA REALISTIC 4K COLORED STARFIELD ─── */
+.starfield{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:0;
+}
+.starfield span{
+  position:absolute;
+  border-radius:50%;
+  background: radial-gradient(circle, #ffffff 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%);
+  box-shadow: 0 0 6px 1px var(--star-color, rgba(255,255,255,0.6));
+  animation:twinkle var(--dur,4s) var(--del,0s) ease-in-out infinite;
+}
+@keyframes twinkle{
+  0%,100%{ opacity:0.15; transform:scale(0.6); }
+  50%{ opacity:var(--pk,1); transform:scale(1.3); box-shadow: 0 0 10px 2px var(--star-color, rgba(255,255,255,0.9)); }
+}
+
+/* ─── INTRO ─── */
+#intro{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:radial-gradient(ellipse at 50% 40%, #0d1a40 0%, var(--navy-deep) 70%);
+  overflow:hidden;
+  transition:opacity 1.6s ease, visibility 1.6s ease;
+  touch-action:none;
+}
+#intro.hide{ opacity:0; visibility:hidden; pointer-events:none; }
+
+#moonViewport{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:2;
+}
+
+#moonSvg{
+  width:min(42vw,200px);
+  filter:drop-shadow(0 0 35px rgba(244,241,230,0.45));
+  transition:filter 0.3s ease;
+}
+
+#moonLabel{
+  margin-top:18px;
+  color:var(--cream-dim);
+  font-size:0.88rem;
+  font-weight:400;
+  letter-spacing:0.06em;
+  opacity:0;
+  transition:opacity 0.3s ease;
+  min-height:1.4em;
+  text-align:center;
+}
+#moonLabel.show{ opacity:1; }
+
+.scroll-invite{
+  position:absolute;
+  bottom:32px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+  color:var(--ink-dim);
+  font-size:0.78rem;
+  animation:bob 2.2s ease-in-out infinite;
+}
+.scroll-invite svg{ width:14px; height:14px; }
+
+@keyframes bob{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(7px); }
+}
+@keyframes fadeUp{
+  from{ opacity:0; transform:translateY(8px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+
+#skipBtn{
+  position:absolute;
+  bottom:22px;
+  left:50%;
+  transform:translateX(-50%);
+  background:none;
+  border:1px solid rgba(255,255,255,0.15);
+  color:var(--ink-dim);
+  font-family:inherit;
+  font-size:0.82rem;
+  padding:8px 20px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:border-color 0.2s,color 0.2s;
+  z-index:5;
+}
+#skipBtn:hover{ border-color:var(--gold-soft); color:var(--ink); }
+
+/* ─── APP ─── */
+#app{
+  position:fixed;
+  inset:0;
+  opacity:0;
+  visibility:hidden;
+  transition:opacity 1.6s ease, visibility 1.6s ease;
+}
+#app.show{ opacity:1; visibility:visible; }
+
+.page{
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse at 50% 28%, #0e1b42 0%, var(--navy-deep) 76%);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity 0.85s ease, visibility 0.85s ease;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+.page.active{ opacity:1; visibility:visible; pointer-events:auto; }
+
+.page-inner{
+  position:relative;
+  z-index:2;
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.block{
+  width:100%;
+  max-width:800px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:56px 28px;
+}
+.block.hero{ min-height:100vh; }
+.block.video-block{ min-height:80vh; gap:44px; }
+.block.qa-block{ min-height:100vh; gap:26px; }
+
+.question{
+  font-size:clamp(1.4rem,4vw,2.1rem);
+  font-weight:700;
+  color:var(--ink);
+  text-align:center;
+  line-height:1.7;
+  margin-bottom:10px;
+}
+
+.reveal-btn{
+  background:transparent;
+  border:1.5px solid var(--gold-soft);
+  color:var(--gold);
+  font-family:inherit;
+  font-size:1rem;
+  font-weight:600;
+  padding:13px 36px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:background 0.22s, color 0.22s, transform 0.18s;
+  margin-top:6px;
+}
+.reveal-btn:hover{ background:var(--gold); color:var(--navy-deep); }
+.reveal-btn:active{ transform:scale(0.97); }
+.reveal-btn:disabled{
+  opacity:0.5;
+  cursor:default;
+  background:transparent;
+  color:var(--gold-soft);
+}
+
+.answer{
+  width:100%;
+  text-align:center;
+  font-size:1.06rem;
+  font-weight:400;
+  line-height:2;
+  color:#a8b3d0;
+  opacity:0;
+  transform:translateY(10px);
+  transition:opacity 0.75s ease, transform 0.75s ease;
+  margin-top:16px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.answer.visible{ opacity:1; transform:none; }
+
+/* ─── FACTS GRID ─── */
+.facts-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  width: 100%;
+}
+.fact-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.055);
+  border-radius: 14px;
+  padding: 24px 16px;
+  flex: 1 1 240px;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: transform 0.3s, background 0.3s;
+}
+.fact-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255,255,255,0.04);
+}
+.fact-card .fact-tag {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(232,168,56,0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+.fact-btn {
+  padding: 8px 24px;
+  font-size: 0.9rem;
+  margin: auto;
+}
+.fact-text {
+  display: none;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #a8b3d0;
+  margin-top: 14px;
+  animation: fadeUp 0.4s ease forwards;
+}
+
+/* ─── QUOTE AT BOTTOM ─── */
+.quote-final{
+  margin-top:50px;
+  padding:20px 30px;
+  width:100%;
+  max-width:520px;
+  text-align:center;
+  font-size:clamp(1.2rem,3.8vw,1.6rem);
+  font-weight:700;
+  color:var(--gold);
+  border-top:1px solid var(--gold-dim);
+  border-bottom:1px solid var(--gold-dim);
+  letter-spacing:0.01em;
+  line-height:1.8;
+}
+
+.scroll-cue{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  color:var(--ink-dim);
+  font-size:0.8rem;
+  animation:bob 2.2s ease-in-out infinite;
+  margin-top:40px;
+}
+.scroll-cue svg{ width:15px; height:15px; }
+
+.video-frame{
+  width:min(560px,88vw);
+  aspect-ratio:16/9;
+  border:1.5px dashed rgba(232,168,56,0.38);
+  border-radius:14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  background:rgba(255,255,255,0.015);
+}
+.video-frame svg{ width:36px; height:36px; opacity:0.65; }
+.video-frame span{ color:var(--ink-dim); font-size:0.9rem; }
+
+.star-nav{
+  background:none;
+  border:none;
+  cursor:pointer;
+  width:54px;
+  height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  transition:transform 0.3s ease, filter 0.3s ease;
+  filter:drop-shadow(0 0 6px rgba(232,168,56,0.4));
+}
+.star-nav svg{ width:30px; height:30px; }
+.star-nav:hover{ transform:scale(1.15); filter:drop-shadow(0 0 16px rgba(232,168,56,0.65)); }
+.star-nav.fade-in{ opacity:0; animation:fadeUp 0.9s ease forwards; }
+
+.qmark-btn{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  border:1.5px solid var(--gold-soft);
+  background:rgba(232,168,56,0.05);
+  color:var(--gold);
+  font-size:2.1rem;
+  font-weight:700;
+  font-family:inherit;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 0 28px rgba(232,168,56,0.2);
+  transition:box-shadow 0.3s, opacity 0.6s, transform 0.6s;
+}
+.qmark-btn:hover{ box-shadow:0 0 38px rgba(232,168,56,0.38); }
+.qmark-btn.gone{ opacity:0; transform:scale(0.65); pointer-events:none; position:absolute; }
+
+.qa2-content{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:100%;
+  max-width:620px;
+  opacity:0;
+  transform:translateY(12px);
+  transition:opacity 0.85s ease, transform 0.85s ease;
+}
+.qa2-content.visible{ opacity:1; transform:none; }
+
+.answers-list{ list-style:none; margin-top:18px; width:100%; display:flex; flex-direction:column; gap:14px; }
+.answers-list li{ display:flex; align-items:center; gap:14px; font-size:1rem; line-height:1.8; color:#a8b3d0; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.055); border-radius:12px; padding:15px 18px; opacity:0; transform:translateY(10px); transition:opacity 0.6s ease, transform 0.6s ease; }
+.answers-list li.visible{ opacity:1; transform:none; }
+.answers-list li .list-tag { font-size: 0.8rem; font-weight: 700; color: var(--gold); background: rgba(232,168,56,0.1); padding: 3px 10px; border-radius: 12px; flex-shrink: 0; }
+
+.facts-block{ gap:8px; padding-top:64px; padding-bottom:64px; }
+.facts-heading2{ margin-top:34px; }
+.facts-list{ max-width:600px; }
+.facts-list li{ opacity:1; transform:none; }
+
+@media (max-width:520px){
+  .block{ padding:40px 20px; }
+  .qmark-btn{ width:68px; height:68px; font-size:1.7rem; }
+  #moonSvg{ width:min(55vw,170px); }
+  .fact-card { flex: 1 1 100%; }
+}
+
+button:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
+
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     INTRO SPLASH
+════════════════════════════════ -->
+<div id="intro">
+  <div class="starfield" id="introStars"></div>
+
+  <!-- SUPER REALISTIC MOON VIEWPORT -->
+  <div id="moonViewport">
+    <svg id="moonSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="mg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(244,241,230,0.5)"/>
+          <stop offset="50%" stop-color="rgba(244,241,230,0.15)"/>
+          <stop offset="100%" stop-color="rgba(244,241,230,0)"/>
+        </radialGradient>
+        <radialGradient id="moonShade" cx="32%" cy="30%" r="72%">
+          <stop offset="0%"  stop-color="#ffffff"/>
+          <stop offset="20%" stop-color="#f0eee8"/>
+          <stop offset="45%" stop-color="#c9c6bb"/>
+          <stop offset="70%" stop-color="#7a786e"/>
+          <stop offset="90%" stop-color="#302f2b"/>
+          <stop offset="100%" stop-color="#121211"/>
+        </radialGradient>
+        <filter id="craterBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2"/></filter>
+        <filter id="slightBlur"><feGaussianBlur stdDeviation="0.6"/></filter>
+        <filter id="terminatorBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4.5"/></filter>
+        <filter id="moonTexture" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" result="noise"/>
+          <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.18 0" in="noise" result="coloredNoise"/>
+          <feBlend mode="multiply" in="SourceGraphic" in2="coloredNoise"/>
+        </filter>
+        <clipPath id="moonClip"><circle cx="100" cy="100" r="68"/></clipPath>
+        <mask id="cm">
+          <rect width="200" height="200" fill="#fff"/>
+          <circle id="maskCircle" cx="142" cy="88" r="68" fill="#000" filter="url(#terminatorBlur)"/>
+        </mask>
+      </defs>
+      <circle cx="100" cy="100" r="98" fill="url(#mg)" id="glowCircle"/>
+      <g mask="url(#cm)">
+        <circle cx="100" cy="100" r="68" fill="url(#moonShade)" filter="url(#moonTexture)"/>
+        <g clip-path="url(#moonClip)">
+          <path d="M60,40 Q80,25 110,40 T135,70 Q140,90 115,100 T85,95 T60,70 Z" fill="#111" opacity="0.32" filter="url(#craterBlur)"/>
+          <path d="M95,100 Q130,85 145,120 T115,155 T90,135 T80,115 Z" fill="#111" opacity="0.28" filter="url(#craterBlur)"/>
+          <path d="M45,75 Q65,55 80,85 T60,130 T40,110 Z" fill="#111" opacity="0.25" filter="url(#craterBlur)"/>
+          <path d="M125,45 Q140,40 150,55 T135,75 Z" fill="#111" opacity="0.22" filter="url(#craterBlur)"/>
+          <ellipse cx="75" cy="65" rx="15" ry="22" fill="#050505" opacity="0.18" filter="url(#craterBlur)"/>
+          <ellipse cx="115" cy="75" rx="18" ry="12" fill="#050505" opacity="0.15" filter="url(#craterBlur)"/>
+          <g opacity="0.75">
+            <path d="M90,140 L60,105 M90,140 L65,120 M90,140 L125,95 M90,140 L145,115 M90,140 L135,160 M90,140 L50,150 M90,140 L85,85" stroke="#fff" stroke-width="0.8" opacity="0.5" filter="url(#slightBlur)"/>
+            <circle cx="90" cy="140" r="3.5" fill="#eaeaea"/>
+            <circle cx="90" cy="140" r="1.5" fill="#fff"/>
+            <path d="M90,137 A3.5,3.5 0 0,0 87.5,141 A3.5,3.5 0 0,1 92.5,139 Z" fill="#000" opacity="0.45"/>
+          </g>
+          <g opacity="0.65">
+            <path d="M68,82 L45,60 M68,82 L40,85 M68,82 L75,55 M68,82 L90,75 M68,82 L65,105" stroke="#fff" stroke-width="0.7" opacity="0.45" filter="url(#slightBlur)"/>
+            <circle cx="68" cy="82" r="3" fill="#eaeaea"/>
+            <circle cx="68" cy="82" r="1.2" fill="#fff"/>
+            <path d="M68,80 A3,3 0 0,0 65.5,83.5 A3,3 0 0,1 70.5,81 Z" fill="#000" opacity="0.4"/>
+          </g>
+          <g opacity="0.55">
+            <circle cx="48" cy="92" r="2.2" fill="#e5e5e5"/>
+            <circle cx="48" cy="92" r="1" fill="#fff"/>
+          </g>
+          <circle cx="108" cy="52" r="1.5" fill="#fff" opacity="0.4"/>
+          <circle cx="128" cy="92" r="1.8" fill="#fff" opacity="0.35"/>
+          <circle cx="82" cy="42" r="1.2" fill="#fff" opacity="0.5"/>
+          <circle cx="102" cy="118" r="1.6" fill="#fff" opacity="0.4"/>
+        </g>
+        <circle cx="100" cy="100" r="68" fill="none" stroke="#000" stroke-width="3" opacity="0.6" filter="url(#terminatorBlur)"/>
+        <circle cx="100" cy="100" r="68" fill="none" stroke="#121211" stroke-width="1.5" opacity="0.4"/>
+      </g>
+    </svg>
+    <div id="moonLabel">هلال</div>
+
+    <div class="scroll-invite">
+      <span id="scrollInviteText">مرّر للأسفل لإكمال القمر</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <path d="M12 4v16M6 14l6 6 6-6"/>
+      </svg>
+    </div>
+
+    <button id="skipBtn" type="button">تخطي</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     MAIN APP
+════════════════════════════════ -->
+<main id="app">
+
+  <!-- ── PAGE 1 ── -->
+  <section class="page active" id="page1">
+    <div class="starfield" id="lights1"></div>
+    <div class="page-inner">
+
+      <div class="block hero">
+        <h1 class="question">ماهو النوم ؟</h1>
+        <button class="reveal-btn" id="btnA1" type="button">اظهر الإجابة</button>
+        
+        <div class="answer" id="answer1">
+          <p style="max-width: 620px; margin: 0 auto;">النوم حالة طبيعية يحتاجها الجسم والدماغ للراحة واستعادة النشاط، لكنه مو مجرد "إيقاف" للجسم؛ أثناء النوم تحدث عمليات حيوية وتجديدية مهمة جدًا.</p>
+
+          <h2 style="color:var(--gold); font-size:1.15rem; margin-top:36px; text-align:center;">💡 حقائق عن النوم</h2>
+          
+          <div class="facts-grid">
+            <div class="fact-card">
+              <span class="fact-tag">زمن</span>
+              <button class="reveal-btn fact-btn" type="button">اظهر الحقيقة</button>
+              <p class="fact-text">يقضي الإنسان حوالي <b>ثلث حياته</b> في النوم (ما يقارب 25 إلى 30 سنة!).</p>
+            </div>
+            
+            <div class="fact-card">
+              <span class="fact-tag">طاقة</span>
+              <button class="reveal-btn fact-btn" type="button">اظهر الحقيقة</button>
+              <p class="fact-text">يعيد شحن طاقة الدماغ والجسم وإصلاح الخلايا والأنسجة التالفة.</p>
+            </div>
+            
+            <div class="fact-card">
+              <span class="fact-tag">تنظيف</span>
+              <button class="reveal-btn fact-btn" type="button">اظهر الحقيقة</button>
+              <p class="fact-text">أثناء النوم العميق، يقوم الدماغ بتنظيم الذكريات وتصفية السموم المتراكمة طوال اليوم.</p>
+            </div>
+            
+            <div class="fact-card">
+              <span class="fact-tag">حماية</span>
+              <button class="reveal-btn fact-btn" type="button">اظهر الحقيقة</button>
+              <p class="fact-text">النوم المنتظم يقوي جهاز المناعة ويحمي القلب وينظم الهرمونات.</p>
+            </div>
+          </div>
+
+          <blockquote class="quote-final">
+            النوم... مهرب الحياة
+          </blockquote>
+        </div>
+
+        <div class="scroll-cue">
+          <span>مرر للأسفل</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M12 4v16M6 14l6 6 6-6"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="block video-block">
+        <div class="video-frame">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#e8a838" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <path d="M10 9l5 3-5 3V9z"/>
+          </svg>
+          <span>سيُضاف فيديو Scratch هنا</span>
+        </div>
+
+        <button class="star-nav" id="toPage2" type="button" aria-label="الانتقال للصفحة التالية">
+          <svg viewBox="0 0 24 24" fill="var(--gold)">
+            <path d="M12 2l2.2 6.8H21l-5.6 4.1 2.1 6.9L12 15.8 6.5 19.8l2.1-6.9L3 8.8h6.8L12 2z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── PAGE 2 ── -->
+  <section class="page" id="page2">
+    <div class="starfield" id="lights2"></div>
+    <div class="page-inner">
+      <div class="block qa-block">
+        <button class="qmark-btn" id="qmarkBtn" type="button" aria-label="اظهر السؤال">؟</button>
+        <div class="qa2-content" id="qa2Content">
+          <h1 class="question">لماذا نحتاج النوم</h1>
+          <button class="reveal-btn" id="nextAnswerBtn" type="button">اظهر السبب التالي</button>
+          <ul class="answers-list" id="answersList">
+            <li><span class="list-tag">ذاكرة</span><span>يساعد الدماغ على تثبيت المعلومات والذكريات.</span></li>
+            <li><span class="list-tag">طاقة</span><span>يعيد للجسم طاقته وحيويته.</span></li>
+            <li><span class="list-tag">مناعة</span><span>يساعد جهاز المناعة على أداء وظائفه.</span></li>
+            <li><span class="list-tag">مزاج</span><span>يؤثر بشكل مباشر في المزاج والتركيز.</span></li>
+            <li><span class="list-tag">تعلم</span><span>يساعد على التعلم ورفع الأداء الدراسي.</span></li>
+          </ul>
+        </div>
+        <button class="star-nav" id="toPage3" type="button" aria-label="الانتقال للصفحة التالية" style="display:none; margin-top:16px;">
+          <svg viewBox="0 0 24 24" fill="var(--gold)">
+            <path d="M12 2l2.2 6.8H21l-5.6 4.1 2.1 6.9L12 15.8 6.5 19.8l2.1-6.9L3 8.8h6.8L12 2z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PAGE 3 ── -->
+  <section class="page" id="page3">
+    <div class="starfield" id="lights3"></div>
+    <div class="page-inner">
+      <div class="block qa-block">
+        <h1 class="question">ماذا يحدث للدماغ أثناء النوم</h1>
+        <button class="reveal-btn" id="btnA3" type="button">اظهر الإجابة</button>
+        <p class="answer" id="answer3" style="max-width: 620px;">الدماغ يظل نشطًا، ويقوم بتنظيم ومعالجة كثير من المعلومات التي حصلنا عليها خلال اليوم. ولهذا النوم مهم للذاكرة والتعلم</p>
+
+        <button class="star-nav" id="toPage4" type="button" aria-label="الانتقال للصفحة التالية" style="margin-top:44px;">
+          <svg viewBox="0 0 24 24" fill="var(--gold)">
+            <path d="M12 2l2.2 6.8H21l-5.6 4.1 2.1 6.9L12 15.8 6.5 19.8l2.1-6.9L3 8.8h6.8L12 2z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PAGE 4 ── -->
+  <section class="page" id="page4">
+    <div class="starfield" id="lights4"></div>
+    <div class="page-inner">
+      <div class="block qa-block facts-block">
+        <h1 class="question">لماذا النوم بهذه الأهمية؟</h1>
+        <ul class="answers-list facts-list">
+          <li><span class="list-tag">القلب</span><span>يحافظ على صحة القلب وينظم ضغط الدم.</span></li>
+          <li><span class="list-tag">النمو</span><span>ضروري لنمو الجسم، خصوصًا عند الأطفال والمراهقين.</span></li>
+          <li><span class="list-tag">تجديد</span><span>يمنح الخلايا فرصة لإصلاح نفسها وتجديد الطاقة.</span></li>
+          <li><span class="list-tag">وقاية</span><span>يقوّي جهاز المناعة ضد الأمراض المختلفة.</span></li>
+          <li><span class="list-tag">إدراك</span><span>يحسّن التركيز والذاكرة وسرعة اتخاذ القرار.</span></li>
+        </ul>
+
+        <h1 class="question facts-heading2">ماذا يحدث لو لم نأخذ قسطًا كافيًا من النوم؟</h1>
+        <ul class="answers-list facts-list">
+          <li><span class="list-tag">إرهاق</span><span>شعور دائم بالتعب وقلة النشاط خلال اليوم.</span></li>
+          <li><span class="list-tag">تشتت</span><span>ضعف التركيز وصعوبة في الفهم والتحصيل.</span></li>
+          <li><span class="list-tag">توتر</span><span>تقلب المزاج والتوتر والانفعال السريع.</span></li>
+          <li><span class="list-tag">ضعف</span><span>قصور المناعة، مما يزيد فرصة الإصابة بالأمراض.</span></li>
+          <li><span class="list-tag">مخاطر</span><span>على المدى الطويل يزيد خطر مشاكل القلب والسمنة والسكري.</span></li>
+        </ul>
+
+        <button class="star-nav" id="toPage1From4" type="button" aria-label="الرجوع للصفحة الأولى" style="margin-top:20px;">
+          <svg viewBox="0 0 24 24" fill="var(--gold)">
+            <path d="M12 2l2.2 6.8H21l-5.6 4.1 2.1 6.9L12 15.8 6.5 19.8l2.1-6.9L3 8.8h6.8L12 2z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+
+  // توليد نجوم 4K واقعية وملونة (أبيض، ذهبي ناعم، أزرق جليدي، ووردي خافت)
+  function buildField(id, count){
+    var el = document.getElementById(id);
+    if(!el) return;
+    var html = '';
+    var colors = [
+      'rgba(255,255,255,0.9)', 
+      'rgba(232,168,56,0.85)', 
+      'rgba(180,210,255,0.85)', 
+      'rgba(255,220,180,0.85)'
+    ];
+    
+    for(var i=0; i<count; i++){
+      var top  = (Math.random()*100).toFixed(2);
+      var left = (Math.random()*100).toFixed(2);
+      var size = (Math.random()*2.8 + 0.8).toFixed(1);
+      var del  = (Math.random()*8).toFixed(2);
+      var dur  = (2.5 + Math.random()*5).toFixed(2);
+      var pk   = (0.4 + Math.random()*0.6).toFixed(2);
+      var color = colors[Math.floor(Math.random()*colors.length)];
+
+      html += '<span style="top:'+top+'%;left:'+left+'%;width:'+size+'px;height:'+size+'px;' +
+              '--dur:'+dur+'s;--del:'+del+'s;--pk:'+pk+';--star-color:'+color+';"></span>';
+    }
+    el.innerHTML = html;
+  }
+
+  buildField('introStars', 280);
+  buildField('lights1', 110);
+  buildField('lights2', 110);
+  buildField('lights3', 110);
+  buildField('lights4', 110);
+
+  var PHASES = [
+    { label:'هلال رفيع',   cx:148, r:64  },
+    { label:'هلال',        cx:144, r:66  },
+    { label:'ربع القمر',   cx:136, r:67  },
+    { label:'تربيع أول',   cx:126, r:68  },
+    { label:'أحدب متنامٍ', cx:114, r:68  },
+    { label:'شبه بدر',     cx:106, r:68  },
+    { label:'قمر كامل تقريباً', cx:100, r:0 },
+    { label:'بدر كامل 🌕', cx:100, r:0  }
+  ];
+
+  var maskCircle      = document.getElementById('maskCircle');
+  var moonLabel       = document.getElementById('moonLabel');
+  var glowCircle      = document.getElementById('glowCircle');
+  var moonSvgEl       = document.getElementById('moonSvg');
+  var scrollInviteText= document.getElementById('scrollInviteText');
+  var introEl         = document.getElementById('intro');
+  var intro           = document.getElementById('intro');
+  var app             = document.getElementById('app');
+
+  var lastPhaseIdx    = -1;
+  var phaseIdx        = 0;
+  var locked          = false;
+  var introDismissed  = false;
+  var LAST            = PHASES.length - 1;
+
+  function animateToPhase(idx, duration){
+    var from = { cx: parseFloat(maskCircle.getAttribute('cx')) || PHASES[0].cx,
+                 r:  parseFloat(maskCircle.getAttribute('r'))  || PHASES[0].r };
+    var to   = PHASES[idx];
+    var start = null;
+    locked = true;
+
+    function frame(ts){
+      if(start === null) start = ts;
+      var t = Math.min((ts - start) / duration, 1);
+      var ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t;
+      var cx = from.cx + (to.cx - from.cx) * ease;
+      var r  = from.r  + (to.r  - from.r)  * ease;
+
+      if(r <= 1.5){ maskCircle.setAttribute('r','0'); }
+      else{
+        maskCircle.setAttribute('cx', cx.toFixed(1));
+        maskCircle.setAttribute('r',  r.toFixed(1));
+      }
+
+      var progress = idx / LAST;
+      glowCircle.style.opacity = 0.18 + progress * 0.32;
+      moonSvgEl.style.filter = 'drop-shadow(0 0 ' + (35 + progress*25) + 'px rgba(244,241,230,' + (0.45 + progress*0.3) + '))';
+
+      if(t < 1){
+        requestAnimationFrame(frame);
+      } else {
+        locked = false;
+        if(idx === LAST){ scrollInviteText.textContent = 'اكتمل البدر ✨ مرّر للمتابعة'; } 
+        else { scrollInviteText.textContent = 'مرّر للأسفل لإكمال القمر'; }
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function setPhase(idx){
+    idx = Math.max(0, Math.min(idx, LAST));
+    if(idx === phaseIdx && lastPhaseIdx !== -1) return;
+    phaseIdx = idx;
+    animateToPhase(phaseIdx, 180);
+    if(phaseIdx !== lastPhaseIdx){
+      lastPhaseIdx = phaseIdx;
+      moonLabel.classList.remove('show');
+      setTimeout(function(){
+        moonLabel.textContent = PHASES[phaseIdx].label;
+        moonLabel.classList.add('show');
+      }, 50);
+    }
+  }
+  setPhase(0);
+
+  function stepDown(){
+    if(locked || introDismissed) return;
+    if(phaseIdx < LAST){ setPhase(phaseIdx + 1); } 
+    else { dismissIntro(); }
+  }
+  function stepUp(){
+    if(locked || introDismissed) return;
+    if(phaseIdx > 0) setPhase(phaseIdx - 1);
+  }
+
+  introEl.addEventListener('wheel', function(e){
+    e.preventDefault();
+    if(e.deltaY > 0) stepDown(); else if(e.deltaY < 0) stepUp();
+  }, { passive:false });
+
+  var touchStartY = null;
+  introEl.addEventListener('touchstart', function(e){ touchStartY = e.touches[0].clientY; }, { passive:true });
+  introEl.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive:false });
+  introEl.addEventListener('touchend', function(e){
+    if(touchStartY === null) return;
+    var dy = touchStartY - e.changedTouches[0].clientY;
+    touchStartY = null;
+    if(Math.abs(dy) < 24) return;
+    if(dy > 0) stepDown(); else stepUp();
+  });
+
+  introEl.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowDown' || e.key === 'PageDown'){ e.preventDefault(); stepDown(); }
+    else if(e.key === 'ArrowUp' || e.key === 'PageUp'){ e.preventDefault(); stepUp(); }
+  });
+
+  function dismissIntro(){
+    if(introDismissed) return;
+    introDismissed = true;
+    intro.classList.add('hide');
+    app.classList.add('show');
+  }
+
+  document.getElementById('skipBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    dismissIntro();
+  });
+
+  function goTo(id){
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    var t = document.getElementById(id);
+    if(t){ t.classList.add('active'); t.scrollTop = 0; }
+  }
+
+  document.getElementById('toPage2').addEventListener('click', function(){ goTo('page2'); });
+  document.getElementById('toPage3').addEventListener('click', function(){ goTo('page3'); });
+  document.getElementById('toPage4').addEventListener('click', function(){ goTo('page4'); });
+  document.getElementById('toPage1From4').addEventListener('click', function(){ goTo('page1'); });
+
+  /* ── Page 1: reveal MAIN answer ── */
+  document.getElementById('btnA1').addEventListener('click', function(){
+    document.getElementById('answer1').classList.add('visible');
+    this.disabled = true;
+    this.textContent = 'تم عرض الإجابة';
+  });
+
+  /* ── Page 1: reveal INDIVIDUAL facts ── */
+  document.querySelectorAll('.fact-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      this.style.display = 'none';
+      this.nextElementSibling.style.display = 'block';
+    });
+  });
+
+  /* ── Page 2 ── */
+  var qmarkBtn = document.getElementById('qmarkBtn');
+  var qa2Content = document.getElementById('qa2Content');
+  var nextAnswerBtn = document.getElementById('nextAnswerBtn');
+  var listItems = document.querySelectorAll('#answersList li');
+  var toPage3Btn = document.getElementById('toPage3');
+  var revealIdx = 0;
+
+  qmarkBtn.addEventListener('click', function(){
+    qmarkBtn.classList.add('gone');
+    qa2Content.classList.add('visible');
+  });
+
+  nextAnswerBtn.addEventListener('click', function(){
+    if(revealIdx < listItems.length){
+      listItems[revealIdx].classList.add('visible');
+      revealIdx++;
+    }
+    if(revealIdx >= listItems.length){
+      nextAnswerBtn.disabled = true;
+      nextAnswerBtn.textContent = 'تم عرض كل الأسباب';
+      toPage3Btn.style.display = 'flex';
+      toPage3Btn.classList.add('fade-in');
+    }
+  });
+
+  /* ── Page 3 ── */
+  document.getElementById('btnA3').addEventListener('click', function(){
+    document.getElementById('answer3').classList.add('visible');
+    this.disabled = true;
+    this.textContent = 'تم عرض الإجابة';
+  });
+
+})();
+</script>
+
+</body>
+</html>
